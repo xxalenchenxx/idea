@@ -87,6 +87,19 @@ int main(int argc, char **argv){
         }
     }
 
+    vector<vector<bool>> B(node_num_data,vector<bool>(node_num_data,0));  //query node*data graph node
+    for (int i = 0; i < node_num_data; ++i) 
+        for (const auto& val : temp_list_data[i])
+            B[i][val] = true;
+
+    // Print B matrix
+    std::cout << "B matrix:" << std::endl;
+    for (int i = 0; i < node_num_data; ++i) {
+        for (int j = 0; j < node_num_data; ++j) {
+            std::cout << B[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
 
     return 0;
 }
