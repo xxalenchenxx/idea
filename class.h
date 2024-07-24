@@ -98,7 +98,6 @@ void transefer_list2CSR(vector<list<int>> temp_list_data,vector<int> &list_array
         }
         offset_array[i + 1] = j + offset_array[i];
     }
-    cout<<"sort start"<<endl;
     //sort CSR array
     // #pragma omp parallel for
     for(int i=0;i<(offset_array.size()-1);i++){       
