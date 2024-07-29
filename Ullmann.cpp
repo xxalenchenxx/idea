@@ -4,10 +4,103 @@
 // using namespace std;
 
 
-struct IndexedList {
+struct IndexedList { //紀錄order by degree前後的index
     int index;
     std::list<int> lst;
 };
+
+vector<vector<bool>> matrix_multiply(vector<vector<bool>> A,vector<vector<bool>> B){
+    int n = A.size();
+    int m = B.size();
+    int p = B[0].size();
+    
+    vector<vector<bool>> result(n, vector<bool>(p, false));
+    
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < p; j++) {
+            for (int k = 0; k < m; k++) {
+                result[i][j] = result[i][j] || (A[i][k] && B[k][j]);
+            }
+        }
+    }
+    
+    return result;
+}
+
+vector<vector<bool>> matrix_transpose(vector<vector<bool>> A){
+    int n = A.size();
+    int m = A[0].size();
+    
+    vector<vector<bool>> result(m, vector<bool>(n));
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            result[j][i] = A[i][j];
+        }
+    }
+
+    return result;
+}
+
+void DFS_ULLmann(vector<vector<bool>> M,vector<int> enumeration,int enumerate_it,vector<vector<bool>> A,vector<vector<bool>> B,vector<vector<int>> &output){
+    if(enumerate_it==enumeration.size()){
+        vector<vector<bool>> ans;
+        vector<vector<bool>> M_pron(M.size(),vector<bool>(M[0].size(),0));
+        // cout<<"enumeration:"<<endl;
+        // for(const auto& i:enumeration){
+        //     cout<<i<<" ";
+        // }
+        // cout<<endl;
+        for(int i=0;i<enumeration.size();i++)
+            M_pron[i][enumeration[i]]=true;
+        
+        ans=matrix_multiply(M_pron,matrix_transpose(matrix_multiply(M_pron,B))); //M'(M'B)T
+        //cout<<ans.size()<<" , "<<ans[0].size()<<endl;
+        // std::cout << "M matrix:" << std::endl;
+        // for (int i = 0; i < M.size(); ++i) {
+        //     for (int j = 0; j < M[0].size(); ++j) {
+        //         std::cout << M[i][j] << " ";
+        //     }
+        //     std::cout << std::endl;
+        // }
+
+        // std::cout << "B matrix:" << std::endl;
+        // for (int i = 0; i < B.size(); ++i) {
+        //     for (int j = 0; j < B[0].size(); ++j) {
+        //         std::cout << B[i][j] << " ";
+        //     }
+        //     std::cout << std::endl;
+        // }
+
+
+
+
+        for(auto i = 0; i < A.size(); i++) {    //鑒察是否跟A一樣
+            for(auto j = 0; j < A.size(); j++) {
+                if(A[i][j]==1&&ans[i][j]==0){ //No match!!
+                    cout<<"No match!!!"<<endl;
+                    return;
+                }
+            }
+        }
+        output.push_back(enumeration);
+        cout<<"find mapping!!!"<<endl;
+        return;
+    }
+    cout<<"enumerate_it: "<<enumerate_it<<endl;
+    for(int i=0;i<M[0].size();i++){
+        if(M[enumerate_it][i]){
+            vector<int> enumeration_temp=enumeration;
+            vector<vector<bool>> M_temp=M;
+            enumeration_temp[enumerate_it]=i;
+            for(auto delete_it=0;delete_it<M.size();delete_it++) //delete map v to avoid repeated enumeration
+                M_temp[delete_it][i]=false;
+             DFS_ULLmann(M_temp,enumeration_temp,(enumerate_it+1),A,B,output);
+        }
+    }
+    return;
+}
+
 
 int main(int argc, char **argv){
     //read file list ->CSR
@@ -44,18 +137,6 @@ int main(int argc, char **argv){
     //     std::cout<<endl;
     // }
 
-    //turn into CSR format
-    // std::vector<int> offset_array_query(node_num_query + 1, 0);
-    // std::vector<int> list_array_query(2*edge_num_query, 0); //undirect graph
-    // std::vector<int> offset_array_data(node_num_data + 1, 0);
-    // std::vector<int> list_array_data(2*edge_num_data, 0); //undirect graph
-
-    // transefer_list2CSR(temp_list_query,list_array_query,offset_array_query);
-    // temp_list_query.clear();
-    // temp_list_query.shrink_to_fit();
-    // transefer_list2CSR(temp_list_data,list_array_data,offset_array_data);
-    // temp_list_data.clear();
-    // temp_list_data.shrink_to_fit();
 
     // 創建包含索引和列表的結構
     std::vector<IndexedList> indexedList(node_num_query);
@@ -77,7 +158,7 @@ int main(int argc, char **argv){
         for (const auto& val : indexedList[i].lst)
             A[i][origin2sort[val]] = true;
 
-
+    // 建立矩陣 M
     vector<vector<bool>> M(node_num_query,vector<bool>(node_num_data,0));  //query node*data graph node
     for(int q=0; q < node_num_query; ++q){
         for(int d=0; d < node_num_data; ++d){
@@ -87,6 +168,7 @@ int main(int argc, char **argv){
         }
     }
 
+    // 建立矩陣 B
     vector<vector<bool>> B(node_num_data,vector<bool>(node_num_data,0));  //query node*data graph node
     for (int i = 0; i < node_num_data; ++i) 
         for (const auto& val : temp_list_data[i])
@@ -97,6 +179,34 @@ int main(int argc, char **argv){
     for (int i = 0; i < node_num_data; ++i) {
         for (int j = 0; j < node_num_data; ++j) {
             std::cout << B[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << "A matrix:" << std::endl;
+    for (int i = 0; i < node_num_query; ++i) {
+        for (int j = 0; j < node_num_query; ++j) {
+            std::cout << A[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << " origin2sort:" << std::endl;
+    for (int j = 0; j < origin2sort.size(); ++j) {
+        std::cout << " origin["<<j<<"]"<<origin2sort[j]<<endl;
+    }
+    std::cout << std::endl;
+    
+
+    vector<vector<int>> output;
+    vector<int> enumeration(node_num_query,-1);
+    int enumerate_it=0;
+    DFS_ULLmann(M,enumeration,enumerate_it,A,B,output);
+
+    cout<<"output map:"<<endl;
+    for(auto& result : output) {
+        for(auto& val : result) {
+            std::cout << val << " ";
         }
         std::cout << std::endl;
     }
