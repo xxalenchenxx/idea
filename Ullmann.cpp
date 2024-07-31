@@ -109,10 +109,10 @@ int main(int argc, char **argv){
     string data_graph = argv[2];
     int node_num_query =0, edge_num_query =0;
     int node_num_data =0, edge_num_data =0;
-    // if (argc < 3) {
-    //     std::cerr << "Usage: " << argv[0] << " <query graph> <data graph> " << std::endl;
-    //     return 1;
-    // }
+    if (argc < 3) {
+        std::cerr << "Usage: " << argv[0] << " <query graph> <data graph> " << std::endl;
+        return 1;
+    }
     //-------------------input element----------------------------------
     read_file(query_graph,&node_num_query,&edge_num_query,temp_list_query);
     read_file(data_graph,&node_num_data,&edge_num_data,temp_list_data);
@@ -137,8 +137,9 @@ int main(int argc, char **argv){
     //     std::cout<<endl;
     // }
 
-
+    //time start here
     // 創建包含索引和列表的結構
+    auto beg_t = std::chrono::high_resolution_clock::now();
     std::vector<IndexedList> indexedList(node_num_query);
     std::vector<int> origin2sort(node_num_query);
     for (int i = 0; i < node_num_query; ++i) 
@@ -202,14 +203,60 @@ int main(int argc, char **argv){
     vector<int> enumeration(node_num_query,-1);
     int enumerate_it=0;
     DFS_ULLmann(M,enumeration,enumerate_it,A,B,output);
+    vector<vector<int>> output2origin; //轉回 order
+    //time stop here
+    auto end_t = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end_t - beg_t;
+    std::cout << "Elapsed time: " << elapsed.count() << " seconds." << std::endl;
+    // std::cout << "output matrix:" << std::endl;
+    // for (const auto& row : output) {
+    //     for (const auto& val : row) {
+    //         std::cout << val << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 
-    cout<<"output map:"<<endl;
     for(auto& result : output) {
-        for(auto& val : result) {
-            std::cout << val << " ";
+        vector<int> temp(node_num_query,-1);
+        for(auto i=0;i<result.size();i++){
+            temp[indexedList[i].index]=result[i];
         }
-        std::cout << std::endl;
+        output2origin.push_back(temp);
     }
+
+    // std::cout << "output2origin matrix:" << std::endl;
+    // for (const auto& row : output2origin) {
+    //     for (const auto& val : row) {
+    //         std::cout << val << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+
+    int num_columns = output2origin[0].size();
+    sort(output2origin.begin(), output2origin.end(), [num_columns](const vector<int>& a, const vector<int>& b) {
+        for (int i = 0; i < num_columns; ++i) {
+            if (a[i] != b[i]) {
+                return a[i] < b[i];
+            }
+        }
+        return false; // a 和 b 完全相同
+    });
+
+    size_t pos = query_graph.find_last_of("/\\");
+    std::string filename1 = (pos == std::string::npos) ? query_graph : query_graph.substr(pos + 1);
+    size_t pos1 = data_graph.find_last_of("/\\");
+    std::string filename2 = (pos1 == std::string::npos) ? data_graph : data_graph.substr(pos1 + 1);
+    //outputfile
+    std::ofstream outputFile("dataset_ans/Q"+filename1+"_D"+filename2);
+    for (const auto& row : output2origin) {
+        for (const auto& val : row) {
+            outputFile << val << " ";
+        }
+        outputFile << std::endl;
+    }
+    outputFile.close();
+    std::cout << "end" << std::endl;
+
 
     return 0;
 }

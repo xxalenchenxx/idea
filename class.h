@@ -8,6 +8,7 @@
 #include <set>
 #include <queue>
 #include <map>
+#include <chrono>
 using namespace std;
 
 //struct node
@@ -24,28 +25,28 @@ using namespace std;
 
 
 
-//class graph
-class Graph{
-    public:
-        int m,n;
-        vector<list<int>> adj;
-        Graph(){};
+// //class graph
+// class Graph{
+//     public:
+//         int m,n;
+//         vector<list<int>> adj;
+//         Graph(){};
 
-        void addEdge(int u, int v){      
-            adj[u].push_back(v); 
-            adj[v].push_back(u);
-            return; 
-        }
+//         void addEdge(int u, int v){      
+//             adj[u].push_back(v); 
+//             adj[v].push_back(u);
+//             return; 
+//         }
 
-        void removeEdge(int u, int v){
-            adj[u].remove_if([v](int& n) { return n== v; });
-            adj[v].remove_if([u](int& n) { return n == u; });
-            return;
-        }
+//         void removeEdge(int u, int v){
+//             adj[u].remove_if([v](int& n) { return n== v; });
+//             adj[v].remove_if([u](int& n) { return n == u; });
+//             return;
+//         }
 
         
 
-};
+// };
 
 
 bool read_file(string filename ,int *nodes,int *edges,vector<list<int>> &temp_list){
@@ -105,5 +106,7 @@ void transefer_list2CSR(vector<list<int>> temp_list_data,vector<int> &list_array
     }
     return;
 }
+
+
 
 #endif
