@@ -176,27 +176,27 @@ int main(int argc, char **argv){
             B[i][val] = true;
 
     // Print B matrix
-    std::cout << "B matrix:" << std::endl;
-    for (int i = 0; i < node_num_data; ++i) {
-        for (int j = 0; j < node_num_data; ++j) {
-            std::cout << B[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
+    // std::cout << "B matrix:" << std::endl;
+    // for (int i = 0; i < node_num_data; ++i) {
+    //     for (int j = 0; j < node_num_data; ++j) {
+    //         std::cout << B[i][j] << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 
-    std::cout << "A matrix:" << std::endl;
-    for (int i = 0; i < node_num_query; ++i) {
-        for (int j = 0; j < node_num_query; ++j) {
-            std::cout << A[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
+    // std::cout << "A matrix:" << std::endl;
+    // for (int i = 0; i < node_num_query; ++i) {
+    //     for (int j = 0; j < node_num_query; ++j) {
+    //         std::cout << A[i][j] << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 
-    std::cout << " origin2sort:" << std::endl;
-    for (int j = 0; j < origin2sort.size(); ++j) {
-        std::cout << " origin["<<j<<"]"<<origin2sort[j]<<endl;
-    }
-    std::cout << std::endl;
+    // std::cout << " origin2sort:" << std::endl;
+    // for (int j = 0; j < origin2sort.size(); ++j) {
+    //     std::cout << " origin["<<j<<"]"<<origin2sort[j]<<endl;
+    // }
+    // std::cout << std::endl;
     
 
     vector<vector<int>> output;

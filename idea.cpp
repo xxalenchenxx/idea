@@ -102,8 +102,10 @@ int main(int argc, char **argv){
                         node2++;
                     }
                 }
+                if(sup_temp<min_sup){
+                    min_sup=sup_temp;
+                }
                 sup[j]=sup_temp;
-
                 for(auto insert=offset_array_query[list_array_query[j]];
                     insert<offset_array_query[list_array_query[j]+1];
                     insert++){
@@ -116,12 +118,53 @@ int main(int argc, char **argv){
         }
     }
 
-    auto has_minus_one = [&]() -> bool {
+    auto find_truss = [&]() -> bool {   //check all edge have truss or not
         return std::find(k_truss.begin(), k_truss.end(), -1) != k_truss.end();
     };
+    auto edge_smaller_than_min_sup =[&]()->bool{ //check any edge smaller than support
+        return std::any_of(sup.begin(), sup.end(),[&](int value){return value <= min_sup;});
+    };
 
-    while (has_minus_one()){
-        
+    while (find_truss()){
+        cout<<"---------------k="<<min_sup+2<<"-----------------"<<endl;
+        while(edge_smaller_than_min_sup()){
+            
+            for(auto i=0;i<node_num_query;i++){
+                for(auto j=offset_array_query[i];j<offset_array_query[i+1];j++){
+                    if(i<list_array_query[j] && sup[j]<=min_sup){
+                        int k=(min_sup+2);
+                        k_truss[j] = k;
+                        sup[j]=INT32_MAX;
+                        for(auto insert=offset_array_query[list_array_query[j]];
+                            insert<offset_array_query[list_array_query[j]+1];
+                            insert++){
+                            if(list_array_query[insert]==i){
+                                k_truss[insert]=k;
+                                sup[insert]=INT32_MAX;
+                                break;
+                            }
+                        }
+
+                        int node1=offset_array_query[i],node2=offset_array_query[list_array_query[j]];//two pointers MNN
+                        while(node1<offset_array_query[i+1] && node2<offset_array_query[list_array_query[j]+1]){
+                            if(list_array_query[node1]==list_array_query[node2]){ //found MNN to minus support
+                                sup[node1]--;
+                                sup[node2]--;
+                                node1++;
+                                node2++;
+                            }else if(list_array_query[node1]<list_array_query[node2]){
+                                node1++;
+                            }else{
+                                node2++;
+                            }
+                        }
+
+                    }
+                }
+            }
+
+        }
+        min_sup++;
     }
 
 
@@ -131,11 +174,16 @@ int main(int argc, char **argv){
     std::chrono::duration<double> elapsed = end_t - beg_t;
     std::cout << "Elapsed time: " << elapsed.count() << " seconds." << std::endl;
 
-    // std::cout << "sup: ";
-    // for (const auto& s : sup) {
-    //     std::cout << s << " ";
-    // }
-    // std::cout << std::endl;
+    std::cout << "sup: ";
+    for (const auto& s : sup) {
+        std::cout << s << " ";
+    }
+    std::cout << std::endl;
+    std::cout << "k-truss: ";
+    for (const auto& s : k_truss) {
+        std::cout << s << " ";
+    }
+    std::cout << std::endl;
 
     return 0;
 }
