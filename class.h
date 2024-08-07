@@ -8,6 +8,7 @@
 #include <set>
 #include <queue>
 #include <map>
+#include <omp.h>
 #include <chrono>
 using namespace std;
 
