@@ -265,11 +265,12 @@ int main(int argc, char **argv){
     vector<vector<int>> enumeration_order_first(small_enumeration_threshold);
     priority_queue<pair<int,int>> pq;
     for(int start=0;start<small_enumeration_threshold;start++){
+        // cout<<"conponents: "<<start<<endl;
         visited.assign(node_num_query, false);
         vector<int> order;
         int max_degree_id=-1;
+        int max_value=-1;
         for(int i=0;i<conponents[start].size();i++){    //degree max
-            int max_value=-1;
             if((offset_array_query[conponents[start][i]+1]-offset_array_query[conponents[start][i]])>max_value){
                 max_value=(offset_array_query[conponents[start][i]+1]-offset_array_query[conponents[start][i]]);
                 max_degree_id=conponents[start][i];
@@ -280,6 +281,7 @@ int main(int argc, char **argv){
         
         while(!pq.empty()){  //pick bigger truss node as priority
             auto point=pq.top();
+            // cout<<"degree: "<<point.first<<endl;
             int travesal_point=point.second;
             order.push_back(travesal_point);
             pq.pop();
@@ -307,8 +309,8 @@ int main(int argc, char **argv){
     //sequential BFS
     vector<vector<vector<int>>> each_conponents_enumeration_result(small_enumeration_threshold);
 
-    //parallel available start 1
-    for (auto components_it=0;components_it<small_enumeration_threshold;components_it++) { //each part graph
+    //parallel available start 1  small_enumeration_threshold
+    for (auto components_it=0;components_it<1;components_it++) { //each part graph
         vector<vector<int>> enumerate_candidate_set;
         for(auto data_node=0;data_node<node_num_data;data_node++){//find candidates in datagraph(constraint: degree> q node order 1)
             if((offset_array_data[data_node+1]-offset_array_data[data_node])>=
@@ -317,6 +319,7 @@ int main(int argc, char **argv){
                enumerate_candidate_set.push_back(candidate);
             }
         }
+
         enumerate_candidate_set.shrink_to_fit();
         std::cout<<"component "<<components_it<<" first order candidate :\n";
         for (const auto& component : enumerate_candidate_set) {
@@ -329,16 +332,25 @@ int main(int argc, char **argv){
         //conponents[components_it].size()
         for(auto enumerate_order_it=1;enumerate_order_it<2;enumerate_order_it++){//enumerate second,third,forth....order
             vector<vector<int>> enumerate_temp;
+            //keep enumerating candidate from the front candidate
             //parallel available start 2
-            for(auto pre_cand=0; pre_cand<enumerate_candidate_set.size();pre_cand++){ //keep enumerating candidate from the front candidate
+            for(auto pre_cand=0; pre_cand<enumerate_candidate_set.size();pre_cand++){ 
                 vector<int> backtrack_neighbor;
                 // find bacjtrack neighbor
+                for(const auto& x:enumerate_candidate_set[pre_cand])
+                    cout<<"enumerate: "<<x<<" ";
+                cout<<endl;
+                
                 for(auto order_u_neighbor=offset_array_query[enumeration_order_first[components_it][enumerate_order_it]];
                     order_u_neighbor<offset_array_query[enumeration_order_first[components_it][enumerate_order_it]+1];
                     order_u_neighbor++){   //scale of enumerate query node neighbor
                     for(auto conponent_order=0;conponent_order<enumerate_order_it;conponent_order++){ //match order pre
-                        if(list_array_query[order_u_neighbor]==enumeration_order_first[components_it][conponent_order]){
-                            //enumerate_candidate_set;
+                        
+                        // int u_degree=(offset_array_query[list_array_query[order_u_neighbor]+1]-offset_array_query[list_array_query[order_u_neighbor]]);
+                        // int cand_degree=(offset_array_data[enumerate_candidate_set[pre_cand][conponent_order]+1]-offset_array_data[enumerate_candidate_set[pre_cand][conponent_order]]);
+                        
+                        //cout<<"cand_degree "<<enumerate_candidate_set[pre_cand][conponent_order]<<": "<<cand_degree<<" u_degree"<<list_array_query[order_u_neighbor]<<": "<<u_degree<<endl;
+                        if(list_array_query[order_u_neighbor]==enumeration_order_first[components_it][conponent_order] ){
                             backtrack_neighbor.push_back(enumerate_candidate_set[pre_cand][conponent_order]);
                         }
                     }
@@ -347,7 +359,7 @@ int main(int argc, char **argv){
 
                 //find candidates MNN start
                 vector<int> this_order_cand;
-                this_order_cand.assign( list_array_data.begin()+offset_array_data[backtrack_neighbor[0]] ,list_array_data.begin()+offset_array_data[backtrack_neighbor[0]+1]);
+                this_order_cand.assign( list_array_data.begin()+offset_array_data[backtrack_neighbor[0]] , list_array_data.begin()+offset_array_data[backtrack_neighbor[0]+1]);
                 for(auto MNN_time=1;MNN_time<backtrack_neighbor.size();MNN_time++){ 
                     vector<int> MNN_temp;
                     int cand=0,BN2=offset_array_data[backtrack_neighbor[MNN_time]];//backtrack neighbor abbreviate as BN
@@ -364,24 +376,43 @@ int main(int argc, char **argv){
                     MNN_temp.shrink_to_fit();
                     this_order_cand=MNN_temp;
                 }
-                
-                
-                //find candidates MNN end
-                std::cout<<"backtrack_neighbor candidate: \n";
-                for (const auto& node : this_order_cand) {
-                    std::cout<<"v"<<node << " ";
+                backtrack_neighbor.clear();
+                backtrack_neighbor.shrink_to_fit();
+
+
+                vector<int> case_temp_append;
+                size_t origin_size=enumerate_temp.size();
+                enumerate_temp.resize(origin_size+this_order_cand.size());
+                for(auto add_cand=0;add_cand<this_order_cand.size();add_cand++){
+                    case_temp_append=enumerate_candidate_set[pre_cand];
+                    case_temp_append.resize(case_temp_append.size()+1);
+                    case_temp_append.back() = this_order_cand[add_cand];
+                    enumerate_temp[origin_size+add_cand]=case_temp_append;
                 }
-                std::cout<<endl;
+                case_temp_append.clear();
+                case_temp_append.shrink_to_fit();
 
 
-                
-
-
+                //find candidates MNN end
+                // std::cout<<"backtrack_neighbor candidate: \n";
+                // for (const auto& node : this_order_cand) {
+                //     std::cout<<"v"<<node << " ";
+                // }
+                // std::cout<<endl;
 
             }
             //parallel available end 2
 
-            //enumerate_candidate_set=enumerate_temp;
+            enumerate_candidate_set=enumerate_temp;
+
+            // std::cout << "Enumeration Order : "<<enumerate_order_it << std::endl;
+            // for (const auto& order1 : enumerate_candidate_set) {
+            //     for (const auto& node : order1) {
+            //         std::cout << node << " ";
+            //     }
+            //     std::cout << std::endl;
+            // }
+
         }
     }
     //parallel available end 1
